@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="TaskFlow — a modular vanilla JavaScript advanced task manager.">
+  <title>TaskFlow — Advanced Task Manager</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <div class="app-shell">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">✓</div>
+        <div><strong>TaskFlow</strong><span>Advanced Manager</span></div>
+        <button class="icon-btn mobile-only" id="closeSidebarBtn" aria-label="Close menu">×</button>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Task views">
+        <button class="nav-item active" data-view="all"><span>▣</span> All Tasks <b id="navAllCount">0</b></button>
+        <button class="nav-item" data-view="today"><span>◷</span> Today <b id="navTodayCount">0</b></button>
+        <button class="nav-item" data-view="upcoming"><span>→</span> Upcoming <b id="navUpcomingCount">0</b></button>
+        <button class="nav-item" data-view="overdue"><span>!</span> Overdue <b id="navOverdueCount">0</b></button>
+        <button class="nav-item" data-view="completed"><span>✓</span> Completed <b id="navCompletedCount">0</b></button>
+      </nav>
+
+      <div class="sidebar-section">
+        <div class="section-heading"><span>Categories</span><button class="icon-btn" id="addCategoryBtn" aria-label="Add category">+</button></div>
+        <div id="categoryList" class="category-list"></div>
+      </div>
+
+      <div class="sidebar-section sidebar-tools">
+        <button class="tool-item" id="exportBtn"><span>⇩</span> Export tasks</button>
+        <button class="tool-item" id="importBtn"><span>⇧</span> Import tasks</button>
+        <input id="importInput" type="file" accept=".json,application/json" hidden>
+        <button class="tool-item danger-text" id="clearAllBtn"><span>⌫</span> Clear all tasks</button>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="tool-item" id="shortcutsBtn"><span>⌨</span> Keyboard shortcuts</button>
+        <div class="profile-mini"><div class="avatar">TF</div><div><strong>TaskFlow</strong><span>Local workspace</span></div></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn mobile-only" id="openSidebarBtn" aria-label="Open menu">☰</button>
+        <div>
+          <p class="eyebrow">Workspace</p>
+          <h1 id="pageTitle">All Tasks</h1>
+        </div>
+        <div class="top-actions">
+          <button class="icon-btn" id="themeToggle" aria-label="Toggle theme">☾</button>
+          <button class="primary-btn" id="addTaskBtn">+ <span>New Task</span></button>
+        </div>
+      </header>
+
+      <section class="dashboard">
+        <div class="stats-grid">
+          <article class="stat-card"><div class="stat-icon">▣</div><div><span>Total Tasks</span><strong id="totalStat">0</strong></div></article>
+          <article class="stat-card"><div class="stat-icon">◐</div><div><span>Active Tasks</span><strong id="activeStat">0</strong></div></article>
+          <article class="stat-card"><div class="stat-icon">✓</div><div><span>Completed</span><strong id="completedStat">0</strong></div></article>
+          <article class="stat-card"><div class="stat-icon danger">!</div><div><span>Overdue</span><strong id="overdueStat">0</strong></div></article>
+        </div>
+
+        <article class="progress-card">
+          <div><div><span>Overall Progress</span><strong id="progressText">0%</strong></div><small id="progressCount">0 / 0 completed</small></div>
+          <div class="progress-track" aria-label="Overall completion progress"><div class="progress-bar" id="progressBar"></div></div>
+        </article>
+      </section>
+
+      <section class="workspace">
+        <div class="toolbar">
+          <label class="search-box" for="searchInput"><span>⌕</span><input id="searchInput" type="search" placeholder="Search tasks..." autocomplete="off"><kbd>/</kbd></label>
+          <div class="filter-row">
+            <select id="statusFilter" aria-label="Filter by status">
+              <option value="all">All status</option><option value="active">Active</option><option value="completed">Completed</option>
+              <option value="overdue">Overdue</option><option value="today">Today</option><option value="upcoming">Upcoming</option>
+            </select>
+            <select id="priorityFilter" aria-label="Filter by priority">
+              <option value="all">All priorities</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option>
+            </select>
+            <select id="categoryFilter" aria-label="Filter by category"><option value="all">All categories</option></select>
+            <select id="sortBy" aria-label="Sort tasks">
+              <option value="newest">Newest</option><option value="oldest">Oldest</option><option value="due">Due date</option>
+              <option value="priority">Priority</option><option value="alpha">Alphabetical</option><option value="updated">Recently updated</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="bulkToolbar" class="bulk-toolbar hidden">
+          <strong><span id="selectedCount">0</span> selected</strong>
+          <button class="ghost-btn" data-bulk="complete">Complete</button>
+          <button class="ghost-btn" data-bulk="active">Mark active</button>
+          <button class="ghost-btn" data-bulk="priority">Change priority</button>
+          <button class="ghost-btn danger-text" data-bulk="delete">Delete</button>
+          <button class="icon-btn" id="clearSelectionBtn" aria-label="Clear selection">×</button>
+        </div>
+
+        <div id="taskList" class="task-list" aria-live="polite"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="modalRoot"></div>
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <template id="taskCardTemplate">
+    <article class="task-card" draggable="true">
+      <div class="drag-handle" title="Drag to reorder" aria-hidden="true">⋮⋮</div>
+      <label class="select-wrap"><input class="select-task" type="checkbox" aria-label="Select task"></label>
+      <button class="complete-check" aria-label="Toggle completion"></button>
+      <div class="task-main">
+        <button class="task-title" data-action="details"></button>
+        <p class="task-description"></p>
+        <div class="task-meta">
+          <span class="priority-pill"></span><span class="category-pill"></span><span class="due-pill"></span>
+        </div>
+        <div class="tag-list"></div>
+      </div>
+      <div class="task-actions">
+        <button class="icon-btn" data-action="edit" aria-label="Edit task">✎</button>
+        <button class="icon-btn danger-hover" data-action="delete" aria-label="Delete task">⌫</button>
+      </div>
+    </article>
+  </template>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
