@@ -70,11 +70,42 @@ textarea:focus-visible {
   background: var(--surface);
   border-right: 1px solid var(--border);
   padding: 22px 14px;
+
   display: flex;
   flex-direction: column;
+
   position: fixed;
   inset: 0 auto 0 0;
+
   z-index: 30;
+
+  height: 100dvh;
+
+  /* Important: sidebar itself can scroll */
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+
+  transition:
+    transform 0.25s ease,
+    width 0.25s ease;
+}
+.sidebar.collapsed {
+  transform: translateX(calc(-1 * var(--sidebar) - 10px));
+}
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
 }
 .brand {
   display: flex;
@@ -219,6 +250,10 @@ textarea:focus-visible {
   margin-left: var(--sidebar);
   width: calc(100% - var(--sidebar));
   min-width: 0;
+}
+.main.sidebar-collapsed {
+  margin-left: 0;
+  width: 100%;
 }
 .topbar {
   min-height: 86px;

@@ -13,7 +13,7 @@ export const openTaskModal = ({ task = null, onSubmit }) => {
   root.innerHTML = `
     <div class="modal-backdrop" data-close-modal>
       <form class="modal" id="taskForm" novalidate>
-        <div class="modal-header"><h2>${task ? "Edit Task" : "Create Task"}</h2><button type="button" class="icon-btn" data-close-modal aria-label="Close">×</button></div>
+        <div class="modal-header"><h2>${task ? "Edit Task" : "Create Task"}</h2></div>
         <div class="modal-body">
           <div class="form-grid">
             <div class="field full"><label for="taskTitle">Title *</label><input id="taskTitle" name="title" maxlength="120" value="${escapeHTML(task?.title || "")}" autofocus><span class="field-error" data-error="title"></span></div>
@@ -30,7 +30,7 @@ export const openTaskModal = ({ task = null, onSubmit }) => {
   const form = root.querySelector("#taskForm");
   const category = form.querySelector("[name=category]");
   category.innerHTML = "";
-  (window.taskFlowCategories || ["Work","Study","Personal","Shopping","Fitness","Other"]).forEach(c => {
+  (window.taskFlowCategories || ["Work", "Study", "Personal", "Shopping", "Fitness", "Other"]).forEach(c => {
     const option = document.createElement("option"); option.value = c; option.textContent = c; category.appendChild(option);
   });
   form.querySelector("[name=priority]").value = task?.priority || "medium";
